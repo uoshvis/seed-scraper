@@ -2,6 +2,7 @@ import os
 import scrapy
 from seed_scraper.items import EnforcementItem
 from scrapy.loader import ItemLoader
+from itemloaders.processors import MapCompose, TakeFirst
 
 
 class EnforcementsSpider(scrapy.Spider):
@@ -48,7 +49,10 @@ class EnforcementsSpider(scrapy.Spider):
                     break
 
     def parse_details(self, response, first_resolution_date):
-        loader = ItemLoader(item=EnforcementItem(), selector=response)
+        loader = ItemLoader(item=EnforcementItem(), response=response)
+        loader.default_input_processor = MapCompose(str.strip)
+        loader.default_output_processor = TakeFirst()
+
         loader.add_value('first_resolution_date', first_resolution_date)
         loader.add_xpath('legal_case_name',
                          '//span[contains(.//text(), "Legal Case Name")]/following-sibling::span/text()')
